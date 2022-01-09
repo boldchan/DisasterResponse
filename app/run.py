@@ -7,7 +7,7 @@ from nltk.tokenize import word_tokenize
 
 from flask import Flask
 from flask import render_template, request, jsonify
-from plotly.graph_objs import Bar
+from plotly.graph_objs import Bar, Histogram
 import joblib
 from sqlalchemy import create_engine
 
@@ -42,6 +42,8 @@ def index():
     # TODO: Below is an example - modify to extract data for your own visuals
     genre_counts = df.groupby('genre').count()['message']
     genre_names = list(genre_counts.index)
+
+    message_length = df.message.apply(lambda x: len(tokenize(x)))
     
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
@@ -62,6 +64,22 @@ def index():
                 'xaxis': {
                     'title': "Genre"
                 }
+            }
+        },
+        {
+            'data': [
+                Histogram({'x': message_length, 'histnorm':'percent', })
+            ],
+
+            'layout': {
+                'title': 'Histogram of message length (how many words in one message)',
+                'yaxis': {
+                    'title': "Percent (%)"
+                },
+                'xaxis': {
+                    'title': "Message Length"
+                }
+
             }
         }
     ]
