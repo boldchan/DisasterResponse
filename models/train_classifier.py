@@ -24,6 +24,16 @@ import pickle
 
 
 def load_data(database_filepath):
+    """load data from database
+
+    Args:
+        database_filepath (str): path to the file of database
+
+    Returns:
+        X: features
+        Y: labels
+        category_name: a list of names of category
+    """
     engine = create_engine(f'sqlite:///{database_filepath}')
     df = pd.read_sql_table("labeled_disaster_message", engine)
     X = df.message.values
@@ -33,12 +43,25 @@ def load_data(database_filepath):
 
 
 def tokenize(text):
+    """normalize (lower the case) and tokenize the text, then remove space(s)
+
+    Args:
+        text (str): input string
+
+    Returns:
+        [str]: a list of tokens
+    """
     tokens = word_tokenize(text)
     
     lemmantizer = WordNetLemmatizer()
     return [lemmantizer.lemmatize(token.lower().strip()) for token in tokens]
 
 def build_model():
+    """build ML pipeline, which includes CoutVectorizer and TfidfTransformer for feature extraction, then use MultiOutputClassifier for classification
+
+    Returns:
+        [type]: [description]
+    """
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
