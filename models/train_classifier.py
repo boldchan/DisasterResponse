@@ -16,7 +16,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.pipeline import Pipeline, FeatureUnion
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 
 from sklearn.metrics import classification_report
 
@@ -58,9 +58,6 @@ def tokenize(text):
 
 def build_model():
     """build ML pipeline, which includes CoutVectorizer and TfidfTransformer for feature extraction, then use MultiOutputClassifier for classification
-
-    Returns:
-        [type]: [description]
     """
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
@@ -90,13 +87,23 @@ def main():
         model = build_model()
         
         print('Training model...')
-        model.fit(X_train, Y_train)
+        parameters = {
+            #'tfidf__smooth_idf': [True, False],
+            #'tfidf__sublinear_tf': [True, False],
+            'clf__estimator__n_neighbors': [5, 10], 
+            #'clf__estimator__weights': ['uniform', 'distance'],
+            #'clf__estimator__algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute']
+        }
+
+        cv = GridSearchCV(model, param_grid=parameters, n_jobs=-1, verbose=3)
+        cv.fit(X_train, Y_train)
+        best_model = cv.best_estimator_
         
         print('Evaluating model...')
-        evaluate_model(model, X_test, Y_test, category_names)
+        evaluate_model(best_model, X_test, Y_test, category_names)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
-        save_model(model, model_filepath)
+        save_model(best_model, model_filepath)
 
         print('Trained model saved!')
 
